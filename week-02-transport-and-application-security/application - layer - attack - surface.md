@@ -1,112 +1,103 @@
+# Application Layer Attack Surface — Where Users Meet Risk
 
-# Transport Layer Threats — TCP and Trust Abuse
+Most real-world cyber attacks occur at the Application Layer because this is where systems interact directly with users.
 
-The Transport Layer is responsible for end-to-end communication between applications.
-Its core responsibilities include:
+Applications:
 
-- Ordering data
-- Flow control
-- Congestion control
-- Maintaining stateful connections
+- Make decisions on behalf of users  
+- Accept input from untrusted sources  
+- Maintain sessions over time  
 
-This **statefulness enables reliability**, but it also introduces **trust assumptions** that can be exploited.
-
----
-
-## TCP and the Three-Way Handshake
-
-TCP establishes connections using a three-way handshake:
-
-1. **SYN** — The client requests a connection  
-2. **SYN-ACK** — The server acknowledges the request and allocates resources  
-3. **ACK** — The client confirms, and data transfer begins  
-
-TCP assumes that:
-
-- The client intends to complete the handshake  
-- The client is reachable  
-- The connection request is legitimate  
-
-These assumptions are **intentional design choices**, not accidental flaws.
+This forces **implicit trust** in external data, creating a **primary attack surface**.
 
 ---
 
-## Why TCP Was Designed This Way
+## HTTP and the Illusion of Trust
 
-The Internet was designed for:
+HTTP is a simple request/response protocol. It assumes:
 
-- Openness  
-- Scalability  
-- Performance  
+- Requests reflect genuine user intent  
+- Headers are truthful  
+- Parameters are meaningful  
 
-TCP prioritizes:
+However, HTTP has **no concept of intent**.  
+It cannot distinguish:
 
-- Fast connection establishment  
-- Compatibility across billions of devices  
-- Minimal authentication at lower layers  
+- Legitimate use from abuse  
+- Human users from automated attackers  
 
-No verification occurs during the handshake; authentication is deferred to higher layers.  
-This design enables global connectivity — but creates exploitable trust.
-
----
-
-## SYN Flood Attacks
-
-In a SYN flood attack, an attacker sends a large number of SYN packets to a server.
-
-For each SYN request, the server:
-
-- Allocates memory  
-- Reserves a connection slot  
-- Waits for the final ACK  
-
-The attacker **never completes the handshake**.  
-This traffic is **valid TCP traffic**, and the server behaves **exactly as designed**.
+HTTP **delivers whatever the application accepts**, no judgment included.
 
 ---
 
-## Denial of Service Through Resource Exhaustion
+## User Input as an Attack Vector
 
-SYN floods exploit **finite system resources**:
+Input reaches applications via:
 
-- CPU  
-- Memory  
-- Connection tables  
-- Time  
+- Headers  
+- URLs  
+- Form fields  
+- Cookies  
+- JSON request bodies  
 
-When these resources are exhausted:
+Applications assume:
 
-- Legitimate users are denied service  
-- Higher-layer applications fail  
+- Input is well-formed  
+- Users behave predictably  
 
-This makes SYN floods a classic **Denial of Service (DoS)** attack.
+Attackers intentionally violate these assumptions.
+
+**Key insight:**  
+Every input field is a decision point — and every decision point is a potential vulnerability.
 
 ---
 
-## Why Valid Traffic Can Be Malicious
+## Sessions and Cookies — Stored Trust
 
-Many security systems assume:
+Sessions prevent repeated authentication; cookies serve as:
 
-- Malicious traffic is malformed  
-- Attacks violate protocol rules  
+- Proof of prior trust  
+- Portable identity tokens  
 
-SYN floods demonstrate the opposite:
+If stolen or manipulated, applications **cannot distinguish attackers from legitimate users**, making session management a high-value target.
 
-- Traffic is protocol-compliant  
-- Abuse occurs within normal behavior  
+---
 
-TCP allocates resources **before verifying identity**, creating an **asymmetric cost**:
+## DNS as an Application Dependency
 
-- Cheap for the attacker  
-- Expensive for the server  
+Applications rely on DNS to:
 
-Attackers **cooperate dishonestly with the system**.
+- Make API calls  
+- Connect to databases  
+- Access third-party services  
+
+DNS is assumed to be:
+
+- Correct  
+- Reachable  
+- Authentic  
+
+When DNS fails or is manipulated:
+
+- Applications break  
+- Trust is silently redirected
+
+---
+
+## Why Applications Are Attacked on “Secure Networks”
+
+Even with:
+
+- Firewalls  
+- Monitoring  
+- Encrypted traffic  
+
+Applications remain vulnerable because logic assumptions and user behavior are unpredictable.  
+At the boundary of **human and machine logic**, abuse is inevitable.
 
 ---
 
 ## Key Insight
 
-SYN flood attacks succeed **not because TCP is weak**, but because
-**performance-driven trust is exploitable**.  
-
-This pattern recurs at higher layers of the network stack.
+Networks can be secure while applications remain vulnerable.  
+Application-layer failures are driven by **trust in user-controlled data**, not network weaknesses.
